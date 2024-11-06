@@ -437,6 +437,32 @@ class _MLivelyness7DetectionScreenState
           await _completeStep(step: step);
         }
         break;
+      case LivelynessStep.photoPosition:
+        final BlinkDetectionThreshold? blinkThreshold =
+            LivelynessDetection.instance.thresholdConfig.firstWhereOrNull(
+          (p0) => p0 is BlinkDetectionThreshold,
+        ) as BlinkDetectionThreshold?;
+        if ((face.leftEyeOpenProbability ?? 1.0) <
+                (blinkThreshold?.leftEyeProbability ?? 0.25) &&
+            (face.rightEyeOpenProbability ?? 1.0) <
+                (blinkThreshold?.rightEyeProbability ?? 0.25)) {
+          break;
+        }
+        final SmileDetectionThreshold? smileThreshold =
+            LivelynessDetection.instance.thresholdConfig.firstWhereOrNull(
+          (p0) => p0 is SmileDetectionThreshold,
+        ) as SmileDetectionThreshold?;
+        if ((face.smilingProbability ?? 0) >
+            (smileThreshold?.probability ?? 0.75)) {
+          break;
+        }
+        if ((face.headEulerAngleY ?? 0) > 10 ||
+            (face.headEulerAngleY ?? 0) < -10) {
+          break;
+        }
+        _startProcessing();
+        await _completeStep(step: step);
+        break;
     }
   }
 

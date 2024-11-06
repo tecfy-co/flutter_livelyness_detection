@@ -273,6 +273,23 @@ class _LivelynessDetectionScreenAndroidState
           await _completeStep(step: step);
         }
         break;
+      case LivelynessStep.photoPosition:
+        const double blinkThreshold = 0.25;
+        if ((face.leftEyeOpenProbability ?? 1.0) < (blinkThreshold) &&
+            (face.rightEyeOpenProbability ?? 1.0) < (blinkThreshold)) {
+          break;
+        }
+        if ((face.headEulerAngleY ?? 0) > 10 ||
+            (face.headEulerAngleY ?? 0) < -10) {
+          break;
+        }
+        const double smileThreshold = 0.75;
+        if ((face.smilingProbability ?? 0) > (smileThreshold)) {
+          break;
+        }
+        _startProcessing();
+        await _completeStep(step: step);
+        break;
     }
   }
 

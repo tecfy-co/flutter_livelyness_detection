@@ -1,6 +1,1 @@
-enum LivelynessStep {
-  blink,
-  turnLeft,
-  turnRight,
-  smile,
-}
+enum LivelynessStep { blink, turnLeft, turnRight, smile, photoPosition }
