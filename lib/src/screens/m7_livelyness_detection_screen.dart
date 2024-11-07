@@ -125,7 +125,7 @@ class _MLivelyness7DetectionScreenState
     final camera = availableCams[_cameraIndex];
     _cameraController = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
     );
     _cameraController?.initialize().then((_) {
@@ -206,7 +206,10 @@ class _MLivelyness7DetectionScreenState
 
   bool faceBetterForPhoto(Face newface) {
     if (!faceAcceptedForPhoto(newface)) return false;
-
+    if (newface.leftEyeOpenProbability == null ||
+        newface.smilingProbability == null ||
+        newface.headEulerAngleY == null) return false;
+    if (lastFace == null) return true;
     var eye =
         (1 - newface.leftEyeOpenProbability!) * 50; // 1 is best      0 is worst
     var smile = (newface.smilingProbability!) * 50; // 0 is best      1 is worst
