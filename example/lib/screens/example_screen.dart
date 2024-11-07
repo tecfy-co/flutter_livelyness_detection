@@ -108,6 +108,8 @@ class _ExampleScreenState extends State<ExampleScreen> {
         return "Turn Your Head Right";
       case LivelynessStep.smile:
         return "Smile";
+         case LivelynessStep.photoPosition:
+        return "photoPosition";
     }
   }
 
@@ -121,6 +123,8 @@ class _ExampleScreenState extends State<ExampleScreen> {
         return "Detects Right Turn of the on the face visible in camera";
       case LivelynessStep.smile:
         return "Detects Smile on the face visible in camera";
+        case LivelynessStep.photoPosition:
+        return "Detects photoPosition on the face visible in camera";
     }
   }
 

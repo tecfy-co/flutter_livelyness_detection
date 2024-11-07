@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
 import 'package:livelyness_detection/index.dart';
+import 'package:livelyness_detection/src/core/helpers/image_converter.dart';
 import '../../livelyness_detection.dart';
 
 List<CameraDescription> availableCams = [];
@@ -38,6 +39,8 @@ class _MLivelyness7DetectionScreenState
   bool _isTakingPicture = false;
   Timer? _timerToDetectFace;
   bool _isCaptureButtonVisible = false;
+  InputImage? lastImage;
+  Face? lastFace;
 
   late final List<LivelynessStepItem> _steps;
 
@@ -112,30 +115,14 @@ class _MLivelyness7DetectionScreenState
           return;
         }
         _onDetectionCompleted(
-          imgToReturn: null,
-        );
+            // imgToReturn: null,
+            didCaptureAutomatically: false);
       },
     );
   }
 
   void _startLiveFeed() async {
     final camera = availableCams[_cameraIndex];
-    // _cameraController = CameraController(
-    //   camera,
-    //   ResolutionPreset.high,
-    //   imageFormatGroup: ImageFormatGroup.jpeg,
-    //   enableAudio: false,
-    // );
-    // _cameraController?.initialize().then((_) {
-    //   if (!mounted) {
-    //     return;
-    //   }
-    //   _cameraController?.startImageStream(_processCameraImage);
-    //   if (mounted) {
-    //     _startTimer();
-    //     setState(() {});
-    //   }
-    // });
     _cameraController = CameraController(
       camera,
       ResolutionPreset.high,
@@ -203,11 +190,42 @@ class _MLivelyness7DetectionScreenState
     _processImage(inputImage);
   }
 
+  bool faceAcceptedForPhoto(Face face) {
+    if ((face.leftEyeOpenProbability ?? 1.0) < 0.25 &&
+        (face.rightEyeOpenProbability ?? 1.0) < 0.25) {
+      return false;
+    }
+    if ((face.smilingProbability ?? 0) > 0.75) {
+      return false;
+    }
+    if ((face.headEulerAngleY ?? 0) > 15 || (face.headEulerAngleY ?? 0) < -15) {
+      return false;
+    }
+    return true;
+  }
+
+  bool faceBetterForPhoto(Face newface) {
+    if (!faceAcceptedForPhoto(newface)) return false;
+
+    var eye =
+        (1 - newface.leftEyeOpenProbability!) * 50; // 1 is best      0 is worst
+    var smile = (newface.smilingProbability!) * 50; // 0 is best      1 is worst
+    var angle = newface.headEulerAngleY!.abs(); // 0 is best         50 is worst
+
+    var ceye = (1 - lastFace!.leftEyeOpenProbability!) * 50;
+    var csmile = (lastFace!.smilingProbability!) * 50;
+    var cangle = lastFace!.headEulerAngleY!.abs();
+
+    return (eye + smile + angle) < (ceye + csmile + cangle);
+  }
+
   Future<void> _processImage(InputImage inputImage) async {
     if (_isBusy) {
       return;
     }
+    if (!mounted) return;
     _isBusy = true;
+
     final faces = await MLHelper.instance.processInputImage(inputImage);
 
     if (inputImage.metadata?.size != null &&
@@ -216,6 +234,20 @@ class _MLivelyness7DetectionScreenState
         _resetSteps();
       } else {
         final firstFace = faces.first;
+
+        if (lastImage == null) {
+          lastImage = inputImage;
+          lastFace = firstFace;
+        }
+        if (faceAcceptedForPhoto(firstFace) &&
+            !faceAcceptedForPhoto(lastFace!)) {
+          lastImage = inputImage;
+          lastFace = firstFace;
+        } else if (faceBetterForPhoto(firstFace)) {
+          lastImage = inputImage;
+          lastFace = firstFace;
+        }
+
         final painter = FaceDetectorPainter(
           firstFace,
           inputImage.metadata!.size,
@@ -288,15 +320,17 @@ class _MLivelyness7DetectionScreenState
       setState(
         () => _isTakingPicture = true,
       );
+
       await _cameraController?.stopImageStream();
-      final XFile? clickedImage = await _cameraController?.takePicture();
-      if (clickedImage == null) {
-        _startLiveFeed();
-        return;
-      }
+      // final XFile? clickedImage = await _cameraController?.takePicture();
+
+      // if (clickedImage == null) {
+      // _startLiveFeed();
+      // return;
+      // }
       _onDetectionCompleted(
-        imgToReturn: clickedImage,
-        didCaptureAutomatically: didCaptureAutomatically,
+        // imgToReturn: clickedImage,
+        didCaptureAutomatically: true,
       );
     } catch (e) {
       _startLiveFeed();
@@ -304,18 +338,21 @@ class _MLivelyness7DetectionScreenState
   }
 
   void _onDetectionCompleted({
-    XFile? imgToReturn,
+    // XFile? imgToReturn,
     bool? didCaptureAutomatically,
-  }) {
-    final String imgPath = imgToReturn?.path ?? "";
-    if (imgPath.isEmpty || didCaptureAutomatically == null) {
+  }) async {
+    if (didCaptureAutomatically != true) {
       Navigator.of(context).pop(null);
-      return;
     }
+    var image = await ConvertNativeImgStream().convertImgToBytes(
+        lastImage!.bytes!,
+        lastImage!.metadata!.size.width.toInt(),
+        lastImage!.metadata!.size.height.toInt());
     Navigator.of(context).pop(
       CapturedImage(
-        imgPath: imgPath,
-        didCaptureAutomatically: didCaptureAutomatically,
+        imgPath: null,
+        bytes: image,
+        didCaptureAutomatically: didCaptureAutomatically ?? true,
       ),
     );
   }
@@ -409,8 +446,8 @@ class _MLivelyness7DetectionScreenState
             LivelynessDetection.instance.thresholdConfig.firstWhereOrNull(
           (p0) => p0 is HeadTurnDetectionThreshold,
         ) as HeadTurnDetectionThreshold?;
-        if ((face.headEulerAngleY ?? 0) >
-            (headTurnThreshold?.rotationAngle ?? 45)) {
+        if ((face.headEulerAngleY ?? 0) <
+            (headTurnThreshold?.rotationAngle ?? -40)) {
           _startProcessing();
           await _completeStep(step: step);
         }
@@ -421,7 +458,7 @@ class _MLivelyness7DetectionScreenState
           (p0) => p0 is HeadTurnDetectionThreshold,
         ) as HeadTurnDetectionThreshold?;
         if ((face.headEulerAngleY ?? 0) >
-            (headTurnThreshold?.rotationAngle ?? -50)) {
+            (headTurnThreshold?.rotationAngle ?? 45)) {
           _startProcessing();
           await _completeStep(step: step);
         }
@@ -495,8 +532,8 @@ class _MLivelyness7DetectionScreenState
               backgroundColor: Colors.black,
               child: IconButton(
                 onPressed: () => _onDetectionCompleted(
-                  imgToReturn: null,
-                  didCaptureAutomatically: null,
+                  // imgToReturn: null,
+                  didCaptureAutomatically: false,
                 ),
                 icon: const Icon(
                   Icons.close_rounded,

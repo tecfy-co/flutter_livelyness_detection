@@ -1,19 +1,24 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 class CapturedImage {
-  final String imgPath;
+  final String? imgPath;
+  final Uint8List? bytes;
   final bool didCaptureAutomatically;
   CapturedImage({
-    required this.imgPath,
+    this.imgPath,
+    this.bytes,
     required this.didCaptureAutomatically,
   });
 
   CapturedImage copyWith({
     String? imgPath,
+    Uint8List? bytes,
     bool? didCaptureAutomatically,
   }) {
     return CapturedImage(
       imgPath: imgPath ?? this.imgPath,
+      bytes: bytes ?? this.bytes,
       didCaptureAutomatically:
           didCaptureAutomatically ?? this.didCaptureAutomatically,
     );
@@ -23,6 +28,7 @@ class CapturedImage {
     final result = <String, dynamic>{};
 
     result.addAll({'imgPath': imgPath});
+    result.addAll({'bytes': bytes});
     result.addAll({'didCaptureAutomatically': didCaptureAutomatically});
 
     return result;
@@ -31,6 +37,7 @@ class CapturedImage {
   factory CapturedImage.fromMap(Map<String, dynamic> map) {
     return CapturedImage(
       imgPath: map['imgPath'] ?? '',
+      bytes: map['bytes'],
       didCaptureAutomatically: map['didCaptureAutomatically'] ?? false,
     );
   }
@@ -42,7 +49,7 @@ class CapturedImage {
 
   @override
   String toString() =>
-      'CaptureImage(imgPath: $imgPath, didCaptureAutomatically: $didCaptureAutomatically)';
+      'CaptureImage(imgPath: $imgPath, didCaptureAutomatically: $didCaptureAutomatically, bytes: ${bytes?.length})';
 
   @override
   bool operator ==(Object other) {
@@ -50,6 +57,7 @@ class CapturedImage {
 
     return other is CapturedImage &&
         other.imgPath == imgPath &&
+        other.bytes == bytes &&
         other.didCaptureAutomatically == didCaptureAutomatically;
   }
 
