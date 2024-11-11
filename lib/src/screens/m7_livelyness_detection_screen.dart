@@ -404,28 +404,28 @@ class _MLivelyness7DetectionScreenState
     if (_isProcessingStep) {
       return;
     }
-    final faceWidth = face.boundingBox.width;
-    final Point<int>? leftEyePosition = face
-        .getContour(
-          FaceContourType.leftEye,
-        )
-        ?.points
-        .elementAt(8);
-    final Point<int>? rightEyePosition = face
-        .getContour(
-          FaceContourType.rightEye,
-        )
-        ?.points
-        .elementAt(0);
-    if (leftEyePosition != null && rightEyePosition != null) {
-      final goldenRatio = (faceWidth /
-          leftEyePosition.distanceTo(
-            rightEyePosition,
-          ));
-      if (kDebugMode) {
-        print("Golden Ratio: $goldenRatio");
-      }
-    }
+    // final faceWidth = face.boundingBox.width;
+    // final Point<int>? leftEyePosition = face
+    //     .getContour(
+    //       FaceContourType.leftEye,
+    //     )
+    //     ?.points
+    //     .elementAt(8);
+    // final Point<int>? rightEyePosition = face
+    //     .getContour(
+    //       FaceContourType.rightEye,
+    //     )
+    //     ?.points
+    //     .elementAt(0);
+    // if (leftEyePosition != null && rightEyePosition != null) {
+    //   // final goldenRatio = (faceWidth /
+    //   //     leftEyePosition.distanceTo(
+    //   //       rightEyePosition,
+    //   //     ));
+    //   // if (kDebugMode) {
+    //   //   print("Golden Ratio: $goldenRatio");
+    //   // }
+    // }
     switch (step) {
       case LivelynessStep.blink:
         final BlinkDetectionThreshold? blinkThreshold =

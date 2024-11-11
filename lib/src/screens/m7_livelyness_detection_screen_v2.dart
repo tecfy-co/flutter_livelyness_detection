@@ -189,14 +189,14 @@ class _LivelynessDetectionScreenAndroidState
         rightMouth,
       );
       symmetry['mouthSymmetry'] = mouthSymmetry;
-      double total = 0.0;
-      symmetry.forEach((key, value) {
-        total += value;
-      });
-      final double average = total / symmetry.length;
-      if (kDebugMode) {
-        print("Face Symmetry: $average");
-      }
+      // if (kDebugMode) {
+      // double total = 0.0;
+      // symmetry.forEach((key, value) {
+      //   total += value;
+      // });
+      // final double average = total / symmetry.length;
+      //   print("Face Symmetry: $average");
+      // }
       if (_isProcessingStep &&
           _steps[_stepsKey.currentState?.currentIndex ?? 0].step ==
               LivelynessStep.blink) {
@@ -406,9 +406,14 @@ class _LivelynessDetectionScreenAndroidState
             ? CameraAwesomeBuilder.custom(
                 // flashMode: FlashMode.auto,
                 previewFit: CameraPreviewFit.contain,
-                // aspectRatio: CameraAspectRatios.ratio_16_9,
+                mirrorFrontCamera: true,
+                enablePhysicalButton: false,
+                progressIndicator: const Center(
+                  child: CircularProgressIndicator(),
+                ),
                 sensorConfig: SensorConfig.single(
-                  aspectRatio: CameraAspectRatios.ratio_16_9,
+                  // aspectRatio: CameraAspectRatios.ratio_16_9,
+                  zoom: 0.0,
                   flashMode: FlashMode.auto,
                   sensor: Sensor.position(SensorPosition.front),
                 ),
@@ -473,6 +478,7 @@ class _LivelynessDetectionScreenAndroidState
                   );
                 },
               ),
+        // RectangleWithTransparentCircle(),
         if (_isInfoStepCompleted)
           LivelynessDetectionStepOverlay(
             key: _stepsKey,
@@ -550,5 +556,49 @@ class _LivelynessDetectionScreenAndroidState
     }
 
     return 0.0;
+  }
+}
+
+class RectangleWithTransparentCircle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: RectangleWithCirclePainter(),
+    );
+  }
+}
+
+class RectangleWithCirclePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Define the full rectangle paint
+    final rectPaint = Paint()
+      ..color = Colors.black // Color of the rectangle
+      ..style = PaintingStyle.fill;
+
+    // Create a path for the rectangle
+    final path = Path()
+      ..addRect(
+          Rect.fromLTWH(0, 0, size.width, size.height)); // Rectangle bounds
+
+    // Define an oval cutout in the center
+    final ovalPath = Path()
+      ..addOval(Rect.fromCenter(
+        center: Offset(size.width / 2, size.height / 2), // Oval center
+        width: 200, // Width of the oval
+        height: 250, // Height of the oval
+      ));
+
+    // Subtract the oval from the rectangle
+    path.addPath(ovalPath, Offset.zero);
+    path.fillType = PathFillType.evenOdd; // Subtract the oval
+
+    // Draw the final path
+    canvas.drawPath(path, rectPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false; // No need to repaint unless the design changes
   }
 }
