@@ -560,6 +560,8 @@ class _LivelynessDetectionScreenAndroidState
 }
 
 class RectangleWithTransparentCircle extends StatelessWidget {
+  const RectangleWithTransparentCircle({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(

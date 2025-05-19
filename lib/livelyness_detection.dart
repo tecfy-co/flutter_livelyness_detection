@@ -71,7 +71,7 @@ class LivelynessDetection {
   //* MARK: - Public Methods
   //? =========================================================
 
-  /// A single line functoin to detect weather the face is live or not.
+  /// A single line function to detect weather the face is live or not.
   /// Parameters: -
   /// * context: - Positional Parameter that will accept a `BuildContext` using which it will redirect the a new screen.
   /// * config: - Accepts a `DetectionConfig` object which will hold all the setup config of the package.
@@ -94,7 +94,7 @@ class LivelynessDetection {
     return capturedFacePath;
   }
 
-  /// Configures the shreshold values of which will be used while verfying
+  /// Configures the threshold values of which will be used while verifying
   /// Parameters: -
   /// * thresholds: - List of [DetectionThreshold] objects.
   /// * contourColor - Color of the points that are plotted on the face while detecting.

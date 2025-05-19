@@ -101,7 +101,7 @@ platform :ios, '14.0' # <---------- Uncomment this line
   <summary>Android</summary>
   
   #### Android Setup
-  1. Open the `example/android/app/build.gradle` file and set the `minSdkVersion` as `21`.
+  1. Open the `example/android/app/build.gradle` file and set the `minSdkVersion` as `24`.
 </details>
 
 <a name="codeExample"></a>

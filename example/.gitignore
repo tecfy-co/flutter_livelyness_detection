@@ -1,3 +1,5 @@
+android/app/.cxx/
+android/.kotlin/
 # Miscellaneous
 *.class
 *.log

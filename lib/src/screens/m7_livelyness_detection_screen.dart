@@ -204,22 +204,24 @@ class _MLivelyness7DetectionScreenState
     return true;
   }
 
-  bool faceBetterForPhoto(Face newface) {
-    if (!faceAcceptedForPhoto(newface)) return false;
-    if (newface.leftEyeOpenProbability == null ||
-        newface.smilingProbability == null ||
-        newface.headEulerAngleY == null) return false;
+  bool faceBetterForPhoto(Face newFace) {
+    if (!faceAcceptedForPhoto(newFace)) return false;
+    if (newFace.leftEyeOpenProbability == null ||
+        newFace.smilingProbability == null ||
+        newFace.headEulerAngleY == null) {
+      return false;
+    }
     if (lastFace == null) return true;
     var eye =
-        (1 - newface.leftEyeOpenProbability!) * 50; // 1 is best      0 is worst
-    var smile = (newface.smilingProbability!) * 50; // 0 is best      1 is worst
-    var angle = newface.headEulerAngleY!.abs(); // 0 is best         50 is worst
+        (1 - newFace.leftEyeOpenProbability!) * 50; // 1 is best      0 is worst
+    var smile = (newFace.smilingProbability!) * 50; // 0 is best      1 is worst
+    var angle = newFace.headEulerAngleY!.abs(); // 0 is best         50 is worst
 
-    var ceye = (1 - lastFace!.leftEyeOpenProbability!) * 50;
-    var csmile = (lastFace!.smilingProbability!) * 50;
-    var cangle = lastFace!.headEulerAngleY!.abs();
+    var cEye = (1 - lastFace!.leftEyeOpenProbability!) * 50;
+    var cSmile = (lastFace!.smilingProbability!) * 50;
+    var cAngle = lastFace!.headEulerAngleY!.abs();
 
-    return (eye + smile + angle) < (ceye + csmile + cangle);
+    return (eye + smile + angle) < (cEye + cSmile + cAngle);
   }
 
   Future<void> _processImage(InputImage inputImage) async {
